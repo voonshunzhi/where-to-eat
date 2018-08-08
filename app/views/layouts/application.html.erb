@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>PinterestClone</title>
+    <title>Where To Eat?</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
@@ -10,6 +10,14 @@
   </head>
 
   <body>
+    <% if current_user %>
+      Signed in as <%= current_user.email %> | <%= link_to 'Sign Out', signout_path %>
+    <% else %>
+      <%= link_to 'Sign In', signin_path %> | <%= link_to "Sign in with Google", "/auth/google_oauth2" %>
+      | <%= link_to 'Sign Up', signup_path %>
+    <% end %>
+
     <%= yield %>
+
   </body>
 </html>
