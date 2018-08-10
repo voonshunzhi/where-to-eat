@@ -1,0 +1,81 @@
+<h1>Where To Eat?</h1>
+
+<script>
+  var map;
+  var infowindow;
+  var marker;
+  var placeLoc;
+
+  function initMap() {
+    var center = {lat: 3.134905, lng: 101.629941};
+
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: center,
+      zoom: 17
+    });
+
+    var geocoder = new google.maps.Geocoder();
+
+    document.getElementById('submit').addEventListener('click', function() {
+      geocodeAddress(geocoder, map);
+    });   
+  }
+
+  function callback(results, status) {
+    if (status === google.maps.places.PlacesServiceStatus.OK) {
+      for (var i = 0; i < results.length; i++) {
+        createMarker(results[i]);
+      }
+    }
+  }
+
+  function createMarker(place) {
+    placeLoc = place.geometry.location;
+    marker = new google.maps.Marker({
+      map: map,
+      position: placeLoc      
+    });
+
+    google.maps.event.addListener(marker, 'click', function() {
+      infowindow.setContent(place.name);
+      infowindow.open(map, this);
+    });
+  }
+
+  function geocodeAddress(geocoder, resultsMap) {
+    var address = document.getElementById('address').value;
+    geocoder.geocode({'address': address}, function(results, status) {
+      if (status === 'OK') {
+        resultsMap.setCenter(results[0].geometry.location);
+
+        var request = {
+          location: results[0].geometry.location,
+          radius: 500,
+          type: ['restaurant']
+        }
+
+        infowindow = new google.maps.InfoWindow();
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch(request, callback);
+
+        marker = new google.maps.Marker({
+          map: resultsMap,
+          position: results[0].geometry.location,
+          icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+        });
+      } else {
+        alert('Geocode was not successful for the following reason: ' + status);
+      }
+    });
+  }
+</script>
+
+<div id="search-bar">
+  <input id="address" type="textbox" placeholder="Enter your current location">
+  <input id="submit" type="button" value="Search">
+</div>
+
+<div id="map"></div>
+
+<script src=<%="https://maps.googleapis.com/maps/api/js?key=" + ENV['GOOGLE_MAPS_API_KEY'] + "&libraries=places&callback=initMap"%> async defer></script>
+

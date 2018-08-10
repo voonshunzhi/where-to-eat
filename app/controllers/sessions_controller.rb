@@ -6,7 +6,7 @@ class SessionsController < ApplicationController
 		user = User.find_by_email(params[:email])
 		if user && user.authenticate(params[:password])
 			session[:user_id] = user.id
-			redirect_to root_path
+			redirect_to user_path(user)
 		else
 			redirect_to '/signin'
 		end
@@ -25,7 +25,7 @@ class SessionsController < ApplicationController
 		if authentication.user
 			user = authentication.user
 			authentication.update_token(auth_hash)
-			@next = root_path
+			@next = user_path(user)
 			@notice = "Signed in!"
 		# else: user logs in with OAuth for the first time
 		else
