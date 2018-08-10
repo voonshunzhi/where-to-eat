@@ -3,8 +3,7 @@
 <script>
   var map;
   var infowindow;
-  var marker;
-  var placeLoc;
+  var markers = [];
 
   function initMap() {
     var center = {lat: 3.134905, lng: 101.629941};
@@ -15,8 +14,9 @@
     });
 
     var geocoder = new google.maps.Geocoder();
-
+    
     document.getElementById('submit').addEventListener('click', function() {
+      clearResults(markers);
       geocodeAddress(geocoder, map);
     });   
   }
@@ -24,14 +24,14 @@
   function callback(results, status) {
     if (status === google.maps.places.PlacesServiceStatus.OK) {
       for (var i = 0; i < results.length; i++) {
-        createMarker(results[i]);
+        markers.push(createMarker(results[i]));
       }
     }
   }
-
+  // create location marker with info window
   function createMarker(place) {
-    placeLoc = place.geometry.location;
-    marker = new google.maps.Marker({
+    var placeLoc = place.geometry.location;
+    var marker = new google.maps.Marker({
       map: map,
       position: placeLoc      
     });
@@ -40,14 +40,23 @@
       infowindow.setContent(place.name);
       infowindow.open(map, this);
     });
+    return marker;
   }
-
+  // clear previous result markers
+  function clearResults(markers) {
+    for (var m in markers) {
+      markers[m].setMap(null)
+    }
+    markers = []
+  }
+  // geocode user input location
   function geocodeAddress(geocoder, resultsMap) {
     var address = document.getElementById('address').value;
     geocoder.geocode({'address': address}, function(results, status) {
       if (status === 'OK') {
+        // set user input location as center point
         resultsMap.setCenter(results[0].geometry.location);
-
+        // search restaurants nearby chosen location
         var request = {
           location: results[0].geometry.location,
           radius: 500,
@@ -58,11 +67,6 @@
         var service = new google.maps.places.PlacesService(map);
         service.nearbySearch(request, callback);
 
-        marker = new google.maps.Marker({
-          map: resultsMap,
-          position: results[0].geometry.location,
-          icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
-        });
       } else {
         alert('Geocode was not successful for the following reason: ' + status);
       }
